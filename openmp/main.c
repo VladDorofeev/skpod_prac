@@ -85,16 +85,19 @@ static void kernel_heat_3d(int tsteps, int n, float A[n][n][n],
 static void kernel_heat_3d_rework(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
   int t, i, j, k;
 
-  #pragma omp parallel for private(i, j, k)
-  for (t = 1; t <= TSTEPS; t++) {
-    for (i = 1; i < n - 1; i++) {
-      for (j = 1; j < n - 1; j++) {
-        for (k = 1; k < n - 1; k++) {
-          B[i][j][k] =
-              0.125f * (A[i + 1][j][k] - 2.0f * A[i][j][k] + A[i - 1][j][k]) +
-              0.125f * (A[i][j + 1][k] - 2.0f * A[i][j][k] + A[i][j - 1][k]) +
-              0.125f * (A[i][j][k + 1] - 2.0f * A[i][j][k] + A[i][j][k - 1]) +
-              A[i][j][k];
+  #pragma omp parallel private(t, i, j, k)
+  {
+    #pragma omp for schedule(dynamic)
+    for (t = 1; t <= TSTEPS; t++) {
+      for (i = 1; i < n - 1; i++) {
+        for (j = 1; j < n - 1; j++) {
+          for (k = 1; k < n - 1; k++) {
+            B[i][j][k] =
+                0.125f * (A[i + 1][j][k] - 2.0f * A[i][j][k] + A[i - 1][j][k]) +
+                0.125f * (A[i][j + 1][k] - 2.0f * A[i][j][k] + A[i][j - 1][k]) +
+                0.125f * (A[i][j][k + 1] - 2.0f * A[i][j][k] + A[i][j][k - 1]) +
+                A[i][j][k];
+          }
         }
       }
     }
@@ -143,6 +146,8 @@ int main(int argc, char **argv) {
   kernel_heat_3d_rework(tsteps, n, *C, *D);
   bench_timer_stop();
   bench_timer_print();
+  int num_threads = omp_get_max_threads();
+  printf("Number of threads used: %d\n", num_threads);
 
   if (check_array_equal(n, *A, *B, *C, *D)) {
     printf("Your realization is worst\n");

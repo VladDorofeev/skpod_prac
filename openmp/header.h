@@ -27,7 +27,7 @@
 #define N 200
 # endif
 # ifdef CUSTOM
-#define TSTEPS 300
+#define TSTEPS 400
 #define N 100
 # endif
 #endif
