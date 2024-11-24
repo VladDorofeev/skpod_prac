@@ -53,3 +53,7 @@ dkms.conf
 
 # Tar
 *.tgz
+
+#CUSTOM
+analysis.txt
+.vscode

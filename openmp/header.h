@@ -1,6 +1,8 @@
+#define CUSTOM
+
 #ifndef _HEAT_3D_H
 #define _HEAT_3D_H 
-# if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)
+# if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(CUSTOM) && !defined(EXTRALARGE_DATASET)
 #define LARGE_DATASET
 # endif
 # if !defined(TSTEPS) && !defined(N)
@@ -23,6 +25,10 @@
 # ifdef EXTRALARGE_DATASET
 #define TSTEPS 1000
 #define N 200
+# endif
+# ifdef CUSTOM
+#define TSTEPS 300
+#define N 100
 # endif
 #endif
 #include <stdio.h>

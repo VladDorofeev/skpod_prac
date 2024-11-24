@@ -1,5 +1,9 @@
 /* Include benchmark-specific header. */
-#include "heat-3d.h"
+#include "header.h"
+#include "utils.c"
+
+#include <omp.h>
+
 double bench_t_start, bench_t_end;
 
 static double rtclock() {
@@ -77,6 +81,39 @@ static void kernel_heat_3d(int tsteps, int n, float A[n][n][n],
   }
 }
 
+
+static void kernel_heat_3d_rework(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
+  int t, i, j, k;
+
+  #pragma omp parallel for private(i, j, k)
+  for (t = 1; t <= TSTEPS; t++) {
+    for (i = 1; i < n - 1; i++) {
+      for (j = 1; j < n - 1; j++) {
+        for (k = 1; k < n - 1; k++) {
+          B[i][j][k] =
+              0.125f * (A[i + 1][j][k] - 2.0f * A[i][j][k] + A[i - 1][j][k]) +
+              0.125f * (A[i][j + 1][k] - 2.0f * A[i][j][k] + A[i][j - 1][k]) +
+              0.125f * (A[i][j][k + 1] - 2.0f * A[i][j][k] + A[i][j][k - 1]) +
+              A[i][j][k];
+        }
+      }
+    }
+
+    #pragma omp parallel for private(i, j, k)
+    for (i = 1; i < n - 1; i++) {
+      for (j = 1; j < n - 1; j++) {
+        for (k = 1; k < n - 1; k++) {
+          A[i][j][k] =
+              0.125f * (B[i + 1][j][k] - 2.0f * B[i][j][k] + B[i - 1][j][k]) +
+              0.125f * (B[i][j + 1][k] - 2.0f * B[i][j][k] + B[i][j - 1][k]) +
+              0.125f * (B[i][j][k + 1] - 2.0f * B[i][j][k] + B[i][j][k - 1]) +
+              B[i][j][k];
+        }
+      }
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   int n = N;
   int tsteps = TSTEPS;
@@ -87,20 +124,42 @@ int main(int argc, char **argv) {
   float(*B)[n][n][n];
   B = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
 
+  // For test
+  float(*C)[n][n][n];
+  C = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+
+  float(*D)[n][n][n];
+  D = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+
   init_array(n, *A, *B);
+  init_array(n, *C, *D);
 
   bench_timer_start();
-
   kernel_heat_3d(tsteps, n, *A, *B);
-
   bench_timer_stop();
   bench_timer_print();
+
+  bench_timer_start();
+  kernel_heat_3d_rework(tsteps, n, *C, *D);
+  bench_timer_stop();
+  bench_timer_print();
+
+  if (check_array_equal(n, *A, *B, *C, *D)) {
+    printf("Your realization is worst\n");
+    return 1;
+  } else {
+    printf("Your realization is good\n");
+  }
+  
+
 
   if (argc > 42 && !strcmp(argv[0], ""))
     print_array(n, *A);
 
   free((void *)A);
   free((void *)B);
+  free((void *)C);
+  free((void *)D);
 
   return 0;
 }
