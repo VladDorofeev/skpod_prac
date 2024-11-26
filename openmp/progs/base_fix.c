@@ -5,8 +5,6 @@ static void kernel_heat_3d_base_fixed(int tsteps, int n, float A[n][n][n],
 
   for (t = 1; t <= tsteps; t++) {
 
-    // #pragma omp parallel for private(i, j, k)
-
     for (i = 1; i < n - 1; i++) {
       for (j = 1; j < n - 1; j++) {
         for (k = 1; k < n - 1; k++) {
@@ -20,8 +18,6 @@ static void kernel_heat_3d_base_fixed(int tsteps, int n, float A[n][n][n],
       }
     }
 
-
-    // #pragma omp parallel for private(i, j, k)
 
     for (i = 1; i < n - 1; i++) {
       for (j = 1; j < n - 1; j++) {

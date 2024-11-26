@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include "utils/header.h"
 #include "utils/utils.c"
 
@@ -14,7 +12,7 @@ void bench_timer_start() { bench_t_start = rtclock(); }
 void bench_timer_stop() { bench_t_end = rtclock(); }
 
 void bench_timer_print() {
-  printf("Time in seconds = %0.6lf\n", bench_t_end - bench_t_start);
+  printf("Time in seconds: %0.6lf\n", bench_t_end - bench_t_start);
 }
 
 
@@ -53,9 +51,13 @@ static void kernel_heat_3d(int tsteps, int n, float A[n][n][n],
 
 
 int main(int argc, char **argv) {
+  if ((argc > 1) && (!strcmp(argv[1], "help"))) {
+    print_help();
+    return 0;
+  }
   int n = N;
   int tsteps = TSTEPS;
-  printf("tsteps = %d\nN = %d\n", tsteps, n);
+  printf("TSTEPS: %d, N: %d\n", tsteps, n);
 
   float(*A)[n][n][n];
   A = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
@@ -64,7 +66,7 @@ int main(int argc, char **argv) {
   init_array(n, *A, *B);
 
 
-  printf("Run model is %s\n", argv[1]);
+  printf("Run model: %s\n", argv[1]);
 
   bench_timer_start();
 
@@ -76,8 +78,9 @@ int main(int argc, char **argv) {
     } else if (!strcmp(argv[1], "openmp_base")) {
       kernel_heat_3d_base_parallel(tsteps, n, *A, *B);
     } else if (!strcmp(argv[1], "openmp_improve")) {
-      printf("NOT IMPLEMENTED");
-      // kernel_heat_3d_improve_parallel(tsteps, n, *A, *B);
+      int blocksize = 10;
+      int numthreads = 10;
+      kernel_heat_3d_improve_parallel(tsteps, n, *A, *B, blocksize, numthreads);
     }
   } else {
     kernel_heat_3d(tsteps, n, *A, *B);

@@ -53,3 +53,21 @@ static void init_array(int n, float A[n][n][n], float B[n][n][n]) {
       for (k = 0; k < n; k++)
         A[i][j][k] = B[i][j][k] = (float)(i + j + (n - k)) * 10 / (n);
 }
+
+static void print_help(void) {
+  printf("============ Program for parallel ============\n\n");
+  printf("|---------------------------------------|\n");
+  printf("| DATASET_NAME         |  TSTEPS |  N   |\n");
+  printf("|---------------------------------------|\n");
+  printf("| MINI_DATASET         |   20    |  10  |\n");
+  printf("| SMALL_DATASET        |   40    |  20  |\n");
+  printf("| MEDIUM_DATASET       |   100   |  40  |\n");
+  printf("| LARGE_DATASET        |   500   |  120 |\n");
+  printf("| EXTRALARGE_DATASET   |   1000  |  200 |\n");
+  printf("|=======================================|\n\n");
+  printf("Programs:\n");
+  printf("base programm\n");
+  printf("base_fix programm\n");
+  printf("openmp_base programm\n");
+  printf("openmp_improve programm\n");
+}

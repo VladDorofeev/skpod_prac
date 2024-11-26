@@ -1,5 +1,3 @@
-#define CUSTOM
-
 #ifndef _HEAT_3D_H
 #define _HEAT_3D_H 
 # if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(CUSTOM) && !defined(EXTRALARGE_DATASET)
@@ -39,4 +37,5 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#include <omp.h>
 #endif
