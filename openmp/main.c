@@ -1,19 +1,13 @@
-/* Include benchmark-specific header. */
-#include "header.h"
-#include "utils.c"
-
 #include <omp.h>
 
-double bench_t_start, bench_t_end;
+#include "utils/header.h"
+#include "utils/utils.c"
 
-static double rtclock() {
-  struct timeval Tp;
-  int stat;
-  stat = gettimeofday(&Tp, NULL);
-  if (stat != 0)
-    printf("Error return from gettimeofday: %d", stat);
-  return (Tp.tv_sec + Tp.tv_usec * 1.0e-6);
-}
+#include "progs/openmp.c"
+#include "progs/base_fix.c"
+
+
+double bench_t_start, bench_t_end;
 
 void bench_timer_start() { bench_t_start = rtclock(); }
 
@@ -23,32 +17,7 @@ void bench_timer_print() {
   printf("Time in seconds = %0.6lf\n", bench_t_end - bench_t_start);
 }
 
-static void init_array(int n, float A[n][n][n], float B[n][n][n]) {
-  int i, j, k;
 
-  for (i = 0; i < n; i++)
-    for (j = 0; j < n; j++)
-      for (k = 0; k < n; k++)
-        A[i][j][k] = B[i][j][k] = (float)(i + j + (n - k)) * 10 / (n);
-}
-
-static void print_array(int n, float A[n][n][n])
-
-{
-  int i, j, k;
-
-  fprintf(stderr, "==BEGIN DUMP_ARRAYS==\n");
-  fprintf(stderr, "begin dump: %s", "A");
-  for (i = 0; i < n; i++)
-    for (j = 0; j < n; j++)
-      for (k = 0; k < n; k++) {
-        if ((i * n * n + j * n + k) % 20 == 0)
-          fprintf(stderr, "\n");
-        fprintf(stderr, "%0.2f ", A[i][j][k]);
-      }
-  fprintf(stderr, "\nend   dump: %s\n", "A");
-  fprintf(stderr, "==END   DUMP_ARRAYS==\n");
-}
 
 static void kernel_heat_3d(int tsteps, int n, float A[n][n][n],
                            float B[n][n][n]) {
@@ -82,40 +51,6 @@ static void kernel_heat_3d(int tsteps, int n, float A[n][n][n],
 }
 
 
-static void kernel_heat_3d_rework(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
-  int t, i, j, k;
-
-  #pragma omp parallel private(t, i, j, k)
-  {
-    #pragma omp for schedule(dynamic)
-    for (t = 1; t <= TSTEPS; t++) {
-      for (i = 1; i < n - 1; i++) {
-        for (j = 1; j < n - 1; j++) {
-          for (k = 1; k < n - 1; k++) {
-            B[i][j][k] =
-                0.125f * (A[i + 1][j][k] - 2.0f * A[i][j][k] + A[i - 1][j][k]) +
-                0.125f * (A[i][j + 1][k] - 2.0f * A[i][j][k] + A[i][j - 1][k]) +
-                0.125f * (A[i][j][k + 1] - 2.0f * A[i][j][k] + A[i][j][k - 1]) +
-                A[i][j][k];
-          }
-        }
-      }
-    }
-
-    #pragma omp parallel for private(i, j, k)
-    for (i = 1; i < n - 1; i++) {
-      for (j = 1; j < n - 1; j++) {
-        for (k = 1; k < n - 1; k++) {
-          A[i][j][k] =
-              0.125f * (B[i + 1][j][k] - 2.0f * B[i][j][k] + B[i - 1][j][k]) +
-              0.125f * (B[i][j + 1][k] - 2.0f * B[i][j][k] + B[i][j - 1][k]) +
-              0.125f * (B[i][j][k + 1] - 2.0f * B[i][j][k] + B[i][j][k - 1]) +
-              B[i][j][k];
-        }
-      }
-    }
-  }
-}
 
 int main(int argc, char **argv) {
   int n = N;
@@ -126,45 +61,37 @@ int main(int argc, char **argv) {
   A = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
   float(*B)[n][n][n];
   B = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
-
-  // For test
-  float(*C)[n][n][n];
-  C = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
-
-  float(*D)[n][n][n];
-  D = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
-
   init_array(n, *A, *B);
-  init_array(n, *C, *D);
+
+
+  printf("Run model is %s\n", argv[1]);
 
   bench_timer_start();
-  kernel_heat_3d(tsteps, n, *A, *B);
-  bench_timer_stop();
-  bench_timer_print();
 
-  bench_timer_start();
-  kernel_heat_3d_rework(tsteps, n, *C, *D);
-  bench_timer_stop();
-  bench_timer_print();
-  int num_threads = omp_get_max_threads();
-  printf("Number of threads used: %d\n", num_threads);
-
-  if (check_array_equal(n, *A, *B, *C, *D)) {
-    printf("Your realization is worst\n");
-    return 1;
+  if (argc > 1) {
+    if (!strcmp(argv[1], "base")) {
+      kernel_heat_3d(tsteps, n, *A, *B);
+    } else if (!strcmp(argv[1], "base_fix")) {
+      kernel_heat_3d_base_fixed(tsteps, n, *A, *B);
+    } else if (!strcmp(argv[1], "openmp_base")) {
+      kernel_heat_3d_base_parallel(tsteps, n, *A, *B);
+    } else if (!strcmp(argv[1], "openmp_improve")) {
+      printf("NOT IMPLEMENTED");
+      // kernel_heat_3d_improve_parallel(tsteps, n, *A, *B);
+    }
   } else {
-    printf("Your realization is good\n");
+    kernel_heat_3d(tsteps, n, *A, *B);
   }
-  
 
 
-  if (argc > 42 && !strcmp(argv[0], ""))
-    print_array(n, *A);
+  bench_timer_stop();
+  bench_timer_print();
+
+
+  // double time_start = omp_get_wtime();
 
   free((void *)A);
   free((void *)B);
-  free((void *)C);
-  free((void *)D);
 
   return 0;
 }
