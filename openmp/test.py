@@ -42,6 +42,6 @@ if __name__ == "__main__":
         if times:
             average_time = sum(times) / len(times)
             save_value(dataset, prog_type, average_time)
-            print(f"Saved for {dataset:<20} {prog_type:<15} average time is {average_time:<10}")
+            print(f"Saved for {dataset:<20} {prog_type:<15} average time is {average_time:<10}, \ntimes is {times}")
         else:
             print(f"Failed to extract time for {dataset:<20} {prog_type:<15}")
