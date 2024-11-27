@@ -57,3 +57,5 @@ dkms.conf
 #CUSTOM
 analysis.txt
 .vscode
+temp.txt
+saved_values.txt
