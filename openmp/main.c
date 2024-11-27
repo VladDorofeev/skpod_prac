@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     } else if (!strcmp(argv[1], "openmp_base")) {
       kernel_heat_3d_base_parallel(tsteps, n, *A, *B);
     } else if (!strcmp(argv[1], "openmp_improve")) {
-      int blocksize = 10;
+      int blocksize = 5;
       int numthreads = 10;
       kernel_heat_3d_improve_parallel(tsteps, n, *A, *B, blocksize, numthreads);
     }
