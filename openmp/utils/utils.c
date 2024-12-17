@@ -70,4 +70,5 @@ static void print_help(void) {
   printf("base_fix programm\n");
   printf("openmp_base programm\n");
   printf("openmp_improve programm\n");
+  printf("openmp_task\n");
 }

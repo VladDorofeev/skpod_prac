@@ -81,6 +81,8 @@ int main(int argc, char **argv) {
       int blocksize = 5;
       int numthreads = 10;
       kernel_heat_3d_improve_parallel(tsteps, n, *A, *B, blocksize, numthreads);
+    } else if (!strcmp(argv[1], "openmp_task")) {
+      kernel_heat_3d_task_parallel(tsteps, n, *A, *B);
     }
   } else {
     kernel_heat_3d(tsteps, n, *A, *B);
