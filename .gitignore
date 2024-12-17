@@ -59,3 +59,5 @@ analysis.txt
 .vscode
 temp.txt
 saved_values.txt
+*/outputs/*
+*/venv/*

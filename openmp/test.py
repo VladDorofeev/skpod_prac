@@ -25,9 +25,9 @@ if __name__ == "__main__":
         pass
     
 
-    datasets = ["LARGE_DATASET"]
+    datasets = ["MINI_DATASET", "SMALL_DATASET", "MEDIUM_DATASET", "LARGE_DATASET", "EXTRALARGE_DATASET"]
     prog_types = ["openmp_improve"]
-    num_threads =  [1,2,3,4,5, 6, 7, 8, 9, 10, 20, 40, 60, 80, 100, 120, 140, 160]
+    num_threads =  [1,2,3,4,5, 6, 7, 8]
     combinations = list(itertools.product(prog_types, datasets, num_threads))
 
     for prog_type, dataset, num_thread in combinations:
