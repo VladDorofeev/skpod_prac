@@ -228,12 +228,12 @@ static void kernel_heat_3d_task_parallel(int tsteps, int n, float A[n][n][n],
 
   for (t = 1; t <= tsteps; t++) {
 
-#pragma omp parallel private(i, j, k) //shared(A, B)
+#pragma omp parallel private(i, j, k) shared(A, B)
     {
 #pragma omp single
       {
         for (i = 1; i < n - 1; i++) {
-#pragma omp task private(j, k) firstprivate(i) //shared(A, B)
+#pragma omp task private(j, k) firstprivate(i) shared(A, B)
           {
             for (j = 1; j < n - 1; j++) {
               for (k = 1; k < n - 1; k++) {
@@ -250,12 +250,12 @@ static void kernel_heat_3d_task_parallel(int tsteps, int n, float A[n][n][n],
       }
     }
 
-#pragma omp parallel private(i, j, k) //shared(A, B)
+#pragma omp parallel private(i, j, k) shared(A, B)
     {
 #pragma omp single
       {
         for (i = 1; i < n - 1; i++) {
-#pragma omp task private(j, k) firstprivate(i) //shared(A, B)
+#pragma omp task private(j, k) firstprivate(i) shared(A, B)
           {
             for (j = 1; j < n - 1; j++) {
               for (k = 1; k < n - 1; k++) {

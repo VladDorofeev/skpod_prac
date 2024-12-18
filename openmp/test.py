@@ -26,7 +26,7 @@ if __name__ == "__main__":
     
 
     datasets = ["MINI_DATASET", "SMALL_DATASET", "MEDIUM_DATASET", "LARGE_DATASET", "EXTRALARGE_DATASET"]
-    prog_types = ["openmp_improve"]
+    prog_types = ["openmp_task"]
     num_threads =  [1,2,3,4,5, 6, 7, 8]
     combinations = list(itertools.product(prog_types, datasets, num_threads))
 
@@ -45,3 +45,4 @@ if __name__ == "__main__":
             print(f"Saved for {dataset:<20} {prog_type:<15} average time is {average_time:<10}, num_thread is {num_thread}, \ntimes is {times}")
         else:
             print(f"Failed to extract time for {dataset:<20} {prog_type:<15}")
+
