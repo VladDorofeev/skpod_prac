@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     init_array(n, *A, *B);
 
     bench_timer_start();
-    kernel_heat_3d_base_fixed(tsteps, n, A, B);
+    kernel_heat_3d_mpi(tsteps, n, *A, *B);
     bench_timer_stop();
     bench_timer_print();
 
