@@ -22,17 +22,17 @@ static int check_array_equal(int n, float A[n][n][n], float B[n][n][n],
 static void print_array(int n, float A[n][n][n]) {
   int i, j, k;
 
-  fprintf(stderr, "==BEGIN DUMP_ARRAYS==\n");
-  fprintf(stderr, "begin dump: %s", "A");
+  fprintf(stdout, "==BEGIN DUMP_ARRAYS==\n");
+  fprintf(stdout, "begin dump: %s", "A");
   for (i = 0; i < n; i++)
     for (j = 0; j < n; j++)
       for (k = 0; k < n; k++) {
         if ((i * n * n + j * n + k) % 20 == 0)
-          fprintf(stderr, "\n");
-        fprintf(stderr, "%0.2f ", A[i][j][k]);
+          fprintf(stdout, "\n");
+        fprintf(stdout, "%0.2f ", A[i][j][k]);
       }
-  fprintf(stderr, "\nend   dump: %s\n", "A");
-  fprintf(stderr, "==END   DUMP_ARRAYS==\n");
+  fprintf(stdout, "\nend   dump: %s\n", "A");
+  fprintf(stdout, "==END   DUMP_ARRAYS==\n");
 }
 
 static double rtclock() {

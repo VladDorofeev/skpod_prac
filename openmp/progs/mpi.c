@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "../utils/header.h"
 #include "../utils/utils.c"
+#include "../progs/base_fix.c"
+
 
 double bench_t_start, bench_t_end;
 
@@ -98,6 +100,13 @@ void kernel_heat_3d_mpi(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
 }
 
 int main(int argc, char *argv[]) {
+    float(*C)[n][n][n];
+    C = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+    float(*D)[n][n][n];
+    D = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+    init_array(n, *C, *D);
+
+
     MPI_Init(&argc, &argv);
 
     int n = N;
@@ -115,10 +124,18 @@ int main(int argc, char *argv[]) {
     bench_timer_stop();
     bench_timer_print();
 
+    if (check_array_equal(n, A,B,C,D)) {
+        print("GOOD REALIZATION\n");
+    } else {
+        print("BAD!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    }
+
     // Free global arrays
     free(A);
     free(B);
 
     MPI_Finalize();
+    free(C);
+    free(D);
     return 0;
 }
