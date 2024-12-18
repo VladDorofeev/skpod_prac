@@ -4,6 +4,16 @@
 #include "../utils/header.h"
 #include "../utils/utils.c"
 
+double bench_t_start, bench_t_end;
+
+void bench_timer_start() { bench_t_start = rtclock(); }
+
+void bench_timer_stop() { bench_t_end = rtclock(); }
+
+void bench_timer_print() {
+  printf("Time in seconds: %0.6lf\n", bench_t_end - bench_t_start);
+}
+
 
 void kernel_heat_3d_mpi(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
     int rank, size;
