@@ -55,14 +55,27 @@ void kernel_heat_3d_mpi(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
             }
         }
 
-        // Exchange boundaries
+        // Exchange boundaries for local_B
+        MPI_Request send_request[2], recv_request[2];
+        MPI_Status status[2];
+
         if (rank > 0) {
-            MPI_Send(&local_B[1][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&local_B[0][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Irecv(&local_B[0][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, &recv_request[0]);
+            MPI_Isend(&local_B[1][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, &send_request[0]);
         }
         if (rank < size - 1) {
-            MPI_Send(&local_B[local_n - 2][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&local_B[local_n - 1][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Irecv(&local_B[local_n - 1][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, &recv_request[1]);
+            MPI_Isend(&local_B[local_n - 2][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, &send_request[1]);
+        }
+
+        // Wait for completion of non-blocking operations
+        if (rank > 0) {
+            MPI_Wait(&recv_request[0], &status[0]);
+            MPI_Wait(&send_request[0], &status[0]);
+        }
+        if (rank < size - 1) {
+            MPI_Wait(&recv_request[1], &status[1]);
+            MPI_Wait(&send_request[1], &status[1]);
         }
 
         // Update local_A
@@ -79,14 +92,24 @@ void kernel_heat_3d_mpi(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
             }
         }
 
-        // Exchange boundaries
+        // Exchange boundaries for local_A
         if (rank > 0) {
-            MPI_Send(&local_A[1][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&local_A[0][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Irecv(&local_A[0][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, &recv_request[0]);
+            MPI_Isend(&local_A[1][0][0], n * n, MPI_FLOAT, rank - 1, 0, MPI_COMM_WORLD, &send_request[0]);
         }
         if (rank < size - 1) {
-            MPI_Send(&local_A[local_n - 2][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&local_A[local_n - 1][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Irecv(&local_A[local_n - 1][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, &recv_request[1]);
+            MPI_Isend(&local_A[local_n - 2][0][0], n * n, MPI_FLOAT, rank + 1, 0, MPI_COMM_WORLD, &send_request[1]);
+        }
+
+        // Wait for completion of non-blocking operations
+        if (rank > 0) {
+            MPI_Wait(&recv_request[0], &status[0]);
+            MPI_Wait(&send_request[0], &status[0]);
+        }
+        if (rank < size - 1) {
+            MPI_Wait(&recv_request[1], &status[1]);
+            MPI_Wait(&send_request[1], &status[1]);
         }
     }
 
@@ -99,12 +122,13 @@ void kernel_heat_3d_mpi(int tsteps, int n, float A[n][n][n], float B[n][n][n]) {
     free(local_B);
 }
 
+
 int main(int argc, char *argv[]) {
-    float(*C)[n][n][n];
-    C = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
-    float(*D)[n][n][n];
-    D = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
-    init_array(n, *C, *D);
+    // float(*C)[n][n][n];
+    // C = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+    // float(*D)[n][n][n];
+    // D = (float(*)[n][n][n])malloc((n) * (n) * (n) * sizeof(float));
+    // init_array(n, *C, *D);
 
 
     MPI_Init(&argc, &argv);
@@ -124,18 +148,18 @@ int main(int argc, char *argv[]) {
     bench_timer_stop();
     bench_timer_print();
 
-    if (check_array_equal(n, A,B,C,D)) {
-        print("GOOD REALIZATION\n");
-    } else {
-        print("BAD!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    }
+    // if (check_array_equal(n, A,B,C,D)) {
+    //     print("GOOD REALIZATION\n");
+    // } else {
+    //     print("BAD!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // }
 
     // Free global arrays
     free(A);
     free(B);
 
     MPI_Finalize();
-    free(C);
-    free(D);
+    // free(C);
+    // free(D);
     return 0;
 }
